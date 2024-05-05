@@ -26,7 +26,7 @@ confirmEmail:{
 role:{ 
     type: String,
     required:true,
-      enum: ['HealthcareProfessional', 'Student', 'Admin']
+      enum: ['HealthcareProfessional', 'Student']
 },
 sendCode:{
     type:String,

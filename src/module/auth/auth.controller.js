@@ -1,9 +1,8 @@
 import userModel from "../../../DB/model/user.model.js";
 import bcrypt from 'bcryptjs';
-import cloudinary from "../../services/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { sendEmail } from '../../services/email.js';
-import { nanoid ,customAlphabet} from "nanoid";
+import { customAlphabet} from "nanoid";
 
 
 export const signUp =async (req,res,next)=>{
@@ -19,7 +18,7 @@ export const signUp =async (req,res,next)=>{
 
             const token =jwt.sign({email},process.env.CONFIRMEMAILSECRET);
 
-            const html=  `<a href='${req.protocol}://${req.headers.host}/auth/confirmEmail/${token}>verify</a>`
+            const html=  `<a href='${req.protocol}://${req.headers.host}/auth/confirmEmail/${token}'>verify</a>`
         await sendEmail(email, "confirm email",html); 
         const createUser = await userModel.create({userName, email, password:hashedPassword,role})
         
