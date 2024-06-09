@@ -1,28 +1,22 @@
-// import 'dotenv/config'
-// import express from 'express';
-// import { initApp } from './src/module/app.router.js';
-
-// const app = express();
-//  const PORT = process.env.PORT || 3000;
-
-// initApp(app,express)
-
-
-// app.listen(PORT, ()=>{
-// console.log( `server is running... ${PORT}`)
-// })
+// Import environment variables from a .env file into process.env
 import 'dotenv/config';
-import express from 'express';
-import { initApp } from './src/module/app.router.js';
-// import connectDB from './DB/connection.js';
 
+// Import express framework
+import express from 'express';
+
+// Import the function to initialize the application routes
+import { initApp } from './src/module/app.router.js';
+
+// Create an instance of the express
 const app = express();
+
+// Define the port on which the server will run, default to 3000 if not specified in environment variables
 const PORT = process.env.PORT || 3000;
 
-// connectDB();
-
+// Initialize the application with routes and middleware
 initApp(app, express);
 
+// Start the server and listen on the specified port
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`); // Log a message when the server starts
 });

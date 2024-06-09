@@ -1,36 +1,45 @@
 import jwt from "jsonwebtoken";
 import userModel from "../../DB/model/user.model.js";
 
-export const roles = {
-    Admin:'Admin',
-    User:'User' }
-    
-export const auth = (accessRoles=[])=>{
+// Middleware function for authentication
+// This function ensures the user is logged in (authenticated)
+export const auth = () => {
+    return async (req, res, next) => {
+        // Extract authorization header
+        const { authorization } = req.headers;
 
-return async (req, res, next)=>{
+        // Check if authorization header is present and starts with the correct key
+        if (!authorization?.startsWith(process.env.BEARERKEY)) {
+            return res.status(400).json({ message: "Invalid authorization" });
+        }
 
-const {authorization} = req.headers;
-if(!authorization?.startsWith(process.env.BEARERKEY)){
-return res.status(400).json({message: "Invalid authorization"});
+        // Extract the token from the authorization header
+        const token = authorization.split(process.env.BEARERKEY)[1];
+
+        try {
+            // Verify the token
+            const decoded = jwt.verify(token, process.env.LOGINSECRET);
+
+            // Find the user by ID and select relevant fields
+            const user = await userModel.findById(decoded.id).select("userName role changePasswordTime");
+
+            // Check if the user does not exist
+            if (!user) {
+                return res.status(404).json({ message: "Not registered user" });
+            }
+
+            // Check if the password has been changed since the token was issued
+            if (parseInt(user.changePasswordTime?.getTime() / 1000) > decoded.iat) {
+                return next(new Error(`Expired token, please login`, { cause: 400 }));
+            }
+
+            // Attach user information to the request object
+            req.user = user;
+
+            // Proceed to the next middleware or route handler
+            next();
+        } catch (error) {
+            return res.status(400).json({ message: "Invalid authorization" });
+        }
+    }
 }
-const token = authorization.split(process.env.BEARERKEY)[1];
-const decoded = jwt.verify(token, process.env.LOGINSECRET);
-
-if(!decoded){
-return res.status(400).json({message: "Invalid authorization"});
-}
-const user = await userModel.findById(decoded.id).select("userName role changePasswordTime");
-
-if(!user){
-return res.status(404).json({message: "not registerd user"});
-}
-
-if(parseInt(user.changePasswordTime?.getTime()/ 1000) > decoded.iat){
-     return next(new Error(`expired token , plz login`, {cause:400}));
-
-}
-
-if(!accessRoles.includes(user.role)){
-return res.status(403).json({message:"not auth user"});}
-req.user=user;
-next();}}
